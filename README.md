@@ -54,46 +54,6 @@ Wenn eine Website oder App nicht mehr funktioniert:
 - Keine AdGuard-/Pi-hole-Syntax (`||`, `^`, `$`, Regex)
 - Kommentare (`!` oder `#`) werden ignoriert
 
-## Aktualisieren der Liste
-
-Die Liste wird von der AdGuard-Filterliste generiert. Zum Aktualisieren:
-
-```bash
-# Neue AdGuard-Liste laden
-curl -fsSL 'https://raw.githubusercontent.com/ppfeufer/adguard-filter-list/refs/heads/master/blocklist' -o /tmp/blocklist.txt
-
-# Konvertieren (Python)
-python3 << 'EOF'
-import re
-
-out = []
-seen = set()
-with open('/tmp/blocklist.txt') as f:
-    for line in f:
-        s = line.strip()
-        if not s or s.startswith('!') or s.startswith('$') or s.startswith('/'):
-            continue
-        d = s.lstrip('|').lstrip('.')
-        d = d.strip('^').strip()
-        d = re.sub(r'\$[\w*,]+', '', d).strip()
-        d = d.split(':')[0].split('/')[0].strip()
-        if not d or '.' not in d or '*' in d:
-            continue
-        if d in seen:
-            continue
-        seen.add(d)
-        out.append(d)
-
-with open('blocklist-fritz.txt', 'w') as f:
-    f.write('\n'.join(out) + '\n')
-print(f'{len(out)} entries written')
-EOF
-
-# Pushen
-git add blocklist-fritz.txt
-git commit -m "Update blocklist"
-git push
-```
 
 ## Quelle & Lizenz
 
